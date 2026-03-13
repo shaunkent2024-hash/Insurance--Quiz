@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💰 Insurance IQ Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --card: #13131a;
+    --card2: #1a1a24;
+    --gold: #f5c842;
+    --gold2: #e6a800;
+    --green: #3dffa0;
+    --red: #ff4f6d;
+    --blue: #5b8cff;
+    --text: #f0f0f8;
+    --muted: #7a7a99;
+    --border: #2a2a40;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 10%, rgba(245,200,66,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 80% 90%, rgba(91,140,255,0.07) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HEADER ── */
+  header {
+    text-align: center;
+    padding: 40px 0 30px;
+  }
+
+  .badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 100px;
+    margin-bottom: 16px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #fff 0%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    margin-top: 10px;
+    font-size: 15px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ── SCORE BAR ── */
+  .hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 20px;
+    margin-bottom: 24px;
+    gap: 12px;
+  }
+
+  .hud-item {
+    text-align: center;
+    flex: 1;
+  }
+
+  .hud-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .hud-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--gold);
+    line-height: 1.2;
+  }
+
+  .hud-divider { width: 1px; background: var(--border); height: 36px; }
+
+  .progress-bar-wrap {
+    background: var(--border);
+    border-radius: 100px;
+    height: 6px;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold2), var(--gold));
+    border-radius: 100px;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 20px;
+    animation: slideUp 0.4s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-category {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  .q-number {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    float: right;
+  }
+
+  .question-text {
+    font-size: clamp(1rem, 3vw, 1.25rem);
+    font-weight: 700;
+    line-height: 1.5;
+    margin-bottom: 24px;
+    color: #fff;
+  }
+
+  /* ── OPTIONS ── */
+  .options { display: grid; gap: 10px; }
+
+  .option-btn {
+    background: var(--card2);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 18px;
+    text-align: left;
+    cursor: pointer;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.18s ease;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--gold);
+    background: rgba(245,200,66,0.07);
+    transform: translateX(4px);
+  }
+
+  .option-btn:disabled { cursor: default; }
+
+  .option-btn.correct {
+    border-color: var(--green);
+    background: rgba(61,255,160,0.08);
+    color: var(--green);
+  }
+
+  .option-btn.wrong {
+    border-color: var(--red);
+    background: rgba(255,79,109,0.08);
+    color: var(--red);
+  }
+
+  .option-btn.missed {
+    border-color: var(--green);
+    opacity: 0.5;
+    color: var(--green);
+  }
+
+  .opt-letter {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .option-btn.correct .opt-letter { background: var(--green); color: #000; }
+  .option-btn.wrong .opt-letter   { background: var(--red); color: #fff; }
+
+  /* ── FEEDBACK ── */
+  .feedback {
+    margin-top: 18px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    font-family: 'DM Mono', monospace;
+    display: none;
+  }
+
+  .feedback.show { display: block; animation: slideUp 0.3s ease; }
+  .feedback.correct-fb { background: rgba(61,255,160,0.08); border: 1px solid rgba(61,255,160,0.3); color: var(--green); }
+  .feedback.wrong-fb   { background: rgba(255,79,109,0.08); border: 1px solid rgba(255,79,109,0.3); color: #ff8fa0; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--gold2), var(--gold));
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    padding: 13px 26px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 18px;
+  }
+
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,200,66,0.3); }
+  .btn:active { transform: translateY(0); }
+
+  .btn-ghost {
+    background: transparent;
+    border: 2px solid var(--border);
+    color: var(--muted);
+    margin-left: 10px;
+  }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); box-shadow: none; }
+
+  /* ── RESULT SCREEN ── */
+  #result-screen { display: none; text-align: center; }
+  #result-screen.show { display: block; animation: slideUp 0.5s ease; }
+
+  .result-trophy {
+    font-size: 72px;
+    margin-bottom: 10px;
+    animation: pop 0.6s cubic-bezier(.175,.885,.32,1.275) both;
+  }
+
+  @keyframes pop {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+
+  .result-title {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff, var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+
+  .result-score {
+    font-size: 4rem;
+    font-weight: 800;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .result-label { color: var(--muted); font-size: 13px; font-family: 'DM Mono', monospace; margin-bottom: 20px; }
+
+  .result-bar-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 24px 0;
+    text-align: left;
+  }
+
+  .cat-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .cat-name { width: 140px; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; flex-shrink: 0; }
+  .cat-bar { flex: 1; background: var(--border); border-radius: 100px; height: 8px; overflow: hidden; }
+  .cat-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, var(--gold2), var(--gold)); }
+  .cat-pct { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--gold); width: 36px; text-align: right; }
+
+  .streak-toast {
+    position: fixed;
+    top: 20px; right: 20px;
+    background: linear-gradient(135deg, var(--gold2), var(--gold));
+    color: #000;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 10px 20px;
+    border-radius: 100px;
+    z-index: 999;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+  }
+  .streak-toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── MODE SELECT ── */
+  #mode-screen { text-align: center; padding-bottom: 40px; }
+  .mode-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 28px 0; }
+  .mode-card {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 18px;
+    padding: 22px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .mode-card:hover { border-color: var(--gold); transform: translateY(-3px); }
+  .mode-card.active { border-color: var(--gold); background: rgba(245,200,66,0.07); }
+  .mode-icon { font-size: 32px; margin-bottom: 8px; }
+  .mode-name { font-weight: 800; font-size: 15px; }
+  .mode-desc { font-size: 12px; color: var(--muted); margin-top: 4px; font-family: 'DM Mono', monospace; }
+
+  #quiz-screen { display: none; }
+  #quiz-screen.show { display: block; }
+</style>
+</head>
+<body>
+
+<div class="streak-toast" id="streak-toast">🔥 Streak!</div>
+
+<div class="container">
+  <header>
+    <div class="badge">💰 Insurance IQ</div>
+    <h1>Trust Fund<br>Insurance Quiz</h1>
+    <p class="subtitle">Test your knowledge · Level up your wealth IQ</p>
+  </header>
+
+  <!-- MODE SELECT -->
+  <div id="mode-screen">
+    <div class="card" style="text-align:left">
+      <div class="q-category">Choose your mode</div>
+      <p style="color:var(--muted);font-size:14px;font-family:'DM Mono',monospace;margin-top:4px">Pick how you want to be tested</p>
+      <div class="mode-cards">
+        <div class="mode-card active" onclick="selectMode('mc')" id="mode-mc">
+          <div class="mode-icon">🎯</div>
+          <div class="mode-name">Multiple Choice</div>
+          <div class="mode-desc">4 options, pick the right one</div>
+        </div>
+        <div class="mode-card" onclick="selectMode('tf')" id="mode-tf">
+          <div class="mode-icon">⚡</div>
+          <div class="mode-name">True / False</div>
+          <div class="mode-desc">Quick fire — real or fake?</div>
+        </div>
+        <div class="mode-card" onclick="selectMode('def')" id="mode-def">
+          <div class="mode-icon">📖</div>
+          <div class="mode-name">Definition Match</div>
+          <div class="mode-desc">Match terms to meanings</div>
+        </div>
+        <div class="mode-card" onclick="selectMode('mixed')" id="mode-mixed">
+          <div class="mode-icon">🎲</div>
+          <div class="mode-name">Mixed Bag</div>
+          <div class="mode-desc">All types, randomized</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn" onclick="startQuiz()" style="width:100%;justify-content:center;font-size:16px">
+      Start Quiz →
+    </button>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div id="quiz-screen">
+    <div class="hud">
+      <div class="hud-item">
+        <div class="hud-label">Score</div>
+        <div class="hud-value" id="hud-score">0</div>
+      </div>
+      <div class="hud-divider"></div>
+      <div class="hud-item" style="flex:2">
+        <div class="hud-label">Progress</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="prog-bar" style="width:0%"></div></div>
+      </div>
+      <div class="hud-divider"></div>
+      <div class="hud-item">
+        <div class="hud-label">Streak 🔥</div>
+        <div class="hud-value" id="hud-streak">0</div>
+      </div>
+    </div>
+
+    <div class="card" id="question-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="q-category" id="q-category">—</div>
+        <div class="q-number" id="q-number">1 / 20</div>
+      </div>
+      <div class="question-text" id="question-text">Loading...</div>
+      <div class="options" id="options-container"></div>
+      <div class="feedback" id="feedback"></div>
+      <div>
+        <button class="btn" id="next-btn" onclick="nextQuestion()" style="display:none">Next Question →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div id="result-screen">
+    <div class="card">
+      <div class="result-trophy" id="result-trophy">🏆</div>
+      <div class="result-title" id="result-title">Quiz Complete!</div>
+      <div class="result-score" id="result-score">0/20</div>
+      <div class="result-label" id="result-pct">— % correct</div>
+      <p id="result-msg" style="color:var(--muted);font-family:'DM Mono',monospace;font-size:13px;margin-bottom:20px"></p>
+
+      <div class="result-bar-row" id="cat-breakdown"></div>
+
+      <button class="btn" onclick="restartQuiz()" style="width:100%;justify-content:center">
+        🔄 Play Again
+      </button>
+      <button class="btn btn-ghost" onclick="goHome()" style="width:100%;justify-content:center;margin-left:0;margin-top:10px">
+        ← Change Mode
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────
+//  QUESTION BANK
+// ─────────────────────────────────────────
+const allQuestions = [
+  // MULTIPLE CHOICE — DEFINITIONS
+  { type:'mc', cat:'Definitions', q:'What is a "Death Benefit" in a life insurance policy?', opts:['The premium you pay monthly','The cash value savings component','Money paid to beneficiaries when the insured dies','A type of policy loan'], ans:2,
+    explain:'The death benefit is the amount paid by the insurance company to the beneficiaries upon the death of the insured person.' },
+
+  { type:'mc', cat:'Definitions', q:'What does "Paid-Up Additions (PUA)" do inside a policy?', opts:['Reduces the death benefit','Increases both cash value and death benefit','Acts as a penalty for over-funding','Sets the 7-Pay limit'], ans:1,
+    explain:'PUAs are additional life insurance purchased with extra premiums — they boost both the cash value AND the death benefit.' },
+
+  { type:'mc', cat:'Definitions', q:'What is "Leverage" in the context of insurance and finance?', opts:['Paying premiums in advance','The use of borrowed money to increase potential returns','The fee charged to cancel a policy early','The guaranteed growth rate of a whole life policy'], ans:1,
+    explain:'Leverage means using borrowed money (like a policy loan) to amplify the potential return on an investment.' },
+
+  { type:'mc', cat:'Definitions', q:'A "Policy Lapse" occurs when:', opts:['The insured reaches age 100','There is not enough cash value or premium to keep the policy active','The death benefit is paid out','The policyholder switches insurance companies'], ans:1,
+    explain:'A policy lapses when there isn\'t enough cash value or premium to sustain coverage — a critical risk to avoid.' },
+
+  { type:'mc', cat:'Definitions', q:'What is "Arbitrage" in the insurance strategy context?', opts:['Cancelling a policy for its surrender value','Attempting to profit from the difference between two interest rates','Converting a term policy to whole life','Paying premiums with a credit card'], ans:1,
+    explain:'Arbitrage here refers to profiting from the spread between the loan interest rate charged and the growth rate credited to your cash value.' },
+
+  // MULTIPLE CHOICE — POLICY MECHANICS
+  { type:'mc', cat:'Policy Mechanics', q:'When you take a policy loan, what actually happens to your cash value?', opts:['It disappears until you repay the loan','It is transferred to the insurance company','It usually stays inside the policy as collateral','It gets invested in the stock market'], ans:2,
+    explain:'In most cases your cash value stays inside the policy earning growth — you\'re borrowing from the INSURANCE COMPANY using your cash value as collateral, not withdrawing your own cash.' },
+
+  { type:'mc', cat:'Policy Mechanics', q:'What is the REAL danger of taking policy loans?', opts:['Losing your dividend status','Triggering MEC classification','The policy lapsing if the loan grows larger than the cash value','Being charged surrender fees'], ans:2,
+    explain:'If the loan + accumulated interest exceeds the cash value, the policy collapses. Coverage ends, the death benefit disappears, and the outstanding loan may become taxable income.' },
+
+  { type:'mc', cat:'Policy Mechanics', q:'Which is NOT a component of a life insurance premium payment?', opts:['Insurance costs','Fees and commissions','Cash value accumulation','Dividend payout to shareholders'], ans:3,
+    explain:'Premiums go toward insurance costs, fees/commissions, and cash value accumulation. In mutual companies, dividends go to policyholders — not external shareholders.' },
+
+  { type:'mc', cat:'Policy Mechanics', q:'In a "Non-Direct Recognition Loan," what happens to the dividend credited on borrowed funds?', opts:['It is suspended until the loan is repaid','It is reduced by the loan interest rate','The same dividend rate is credited regardless of borrowing','It is converted to cash and sent to the policyholder'], ans:2,
+    explain:'Non-direct recognition means the insurance company credits the same dividend rate on ALL cash value, borrowed or not — favorable for the policyholder.' },
+
+  { type:'mc', cat:'Policy Mechanics', q:'A "Wash Loan" provision means:', opts:['The policy loan is forgiven at death','Loan interest charged ≈ interest credited on the borrowed portion','The loan is automatically repaid from dividends','You can wash the MEC status by repaying loans'], ans:1,
+    explain:'A wash loan is where the interest the company charges on a policy loan is approximately equal to the interest credited back to that same borrowed amount — effectively a wash.' },
+
+  // MULTIPLE CHOICE — MEC & IRS RULES
+  { type:'mc', cat:'IRS Rules & MEC', q:'What is the "7-Pay Test" used for?', opts:['Calculating the annual dividend','Determining if a policy is over-funded and becomes a MEC','Setting the maximum death benefit','Measuring cash value growth for the first 7 years'], ans:1,
+    explain:'The 7-Pay Test is an IRS rule to determine the maximum premium that can be paid into a policy during its first 7 years before it is reclassified as a Modified Endowment Contract (MEC).' },
+
+  { type:'mc', cat:'IRS Rules & MEC', q:'Once a policy becomes a MEC, what happens?', opts:['It resets after 7 more years','The death benefit doubles','It cannot be reversed and loans/withdrawals are taxed differently','All premiums must be refunded'], ans:2,
+    explain:'MEC status is permanent — it cannot be reversed. Loans and withdrawals from a MEC are taxed as income first, and early withdrawals may incur a 10% penalty.' },
+
+  { type:'mc', cat:'IRS Rules & MEC', q:'Why does the IRS create MEC rules?', opts:['To prevent insurance fraud','To limit the death benefit amount','To classify over-funded policies as investments rather than insurance','To regulate insurance company reserves'], ans:2,
+    explain:'If too much money is stuffed into a policy relative to the death benefit, the IRS views it as an investment vehicle — not insurance — and taxes it accordingly.' },
+
+  // MULTIPLE CHOICE — POLICY TYPES
+  { type:'mc', cat:'Policy Types', q:'Which type of policy has guaranteed growth, fixed premiums, and may pay dividends?', opts:['Term Life','Indexed Universal Life (IUL)','Variable Universal Life (VUL)','Whole Life'], ans:3,
+    explain:'Whole Life has guaranteed growth, fixed premiums, and may pay dividends if it\'s a participating policy from a mutual company.' },
+
+  { type:'mc', cat:'Policy Types', q:'An IUL policy typically has:', opts:['No cap on gains and no floor on losses','Gains linked to a stock index with a 0% floor and a cap on upside','Guaranteed fixed growth like whole life','Cash value invested directly in mutual funds'], ans:1,
+    explain:'Indexed Universal Life links cash value growth to an index (like the S&P 500) with a 0% floor (you can\'t lose principal) but caps on maximum gains.' },
+
+  { type:'mc', cat:'Policy Types', q:'Which policy type carries the MOST market risk?', opts:['Whole Life','Term Life','Variable Universal Life (VUL)','Indexed Universal Life (IUL)'], ans:2,
+    explain:'VUL invests cash value directly in market sub-accounts — highest potential gain but also real risk of loss.' },
+
+  // TRUE / FALSE
+  { type:'tf', cat:'True or False', q:'Policy loans MUST be repaid on a fixed monthly schedule like a bank loan.', ans:1,
+    explain:'FALSE. Policy loans have flexible repayment — you can pay interest only, partially repay, fully repay, or let the loan remain until death (though ignoring it increases lapse risk).' },
+
+  { type:'tf', cat:'True or False', q:'The death benefit paid to beneficiaries is typically NOT subject to federal income tax.', ans:0,
+    explain:'TRUE. In most cases, the death benefit from a life insurance policy is received income-tax-free by beneficiaries.' },
+
+  { type:'tf', cat:'True or False', q:'If a policy with an outstanding loan lapses, the loan balance can become taxable income.', ans:0,
+    explain:'TRUE. This is the real danger of over-leveraging — when a policy lapses with a loan outstanding, the IRS may treat the loan balance as taxable income.' },
+
+  { type:'tf', cat:'True or False', q:'A Mutual Insurance Company is owned by its shareholders on the stock market.', ans:1,
+    explain:'FALSE. Mutual insurance companies are owned by their POLICYHOLDERS, not outside shareholders. This is why policyholders may receive dividends.' },
+
+  { type:'tf', cat:'True or False', q:'Cash value in a permanent life policy grows tax-deferred.', ans:0,
+    explain:'TRUE. Cash value growth is not taxed each year — it grows tax-deferred inside the policy.' },
+
+  { type:'tf', cat:'True or False', q:'Term life insurance builds cash value over time.', ans:1,
+    explain:'FALSE. Term life provides coverage for a specific period only — it does NOT build any cash value.' },
+
+  { type:'tf', cat:'True or False', q:'PUAs (Paid-Up Additions) help accelerate early cash value growth.', ans:0,
+    explain:'TRUE. PUAs are a key tool advisors use to front-load cash value into a policy faster while staying within IRS rules.' },
+
+  { type:'tf', cat:'True or False', q:'Using a credit card to pay premiums is always a good strategy.', ans:1,
+    explain:'FALSE. Only use a credit card if you can IMMEDIATELY pay it off. Credit card interest defeats the purpose of the strategy entirely.' },
+
+  // DEFINITION MATCH
+  { type:'def', cat:'Definition Match', q:'What term describes the savings component of a permanent life insurance policy that grows over time?', opts:['Death Benefit','Cash Value','Policy Loan','Premium'], ans:1,
+    explain:'Cash Value is the savings component inside permanent life insurance — it grows tax-deferred and can be borrowed against.' },
+
+  { type:'def', cat:'Definition Match', q:'What do you call additional life insurance purchased with extra premiums that boosts both cash value and the death benefit?', opts:['Whole Life Base','Paid-Up Additions (PUA)','Variable Sub-Account','Surrender Value'], ans:1,
+    explain:'Paid-Up Additions (PUAs) are the engine advisors use to turbocharge early cash value accumulation.' },
+
+  { type:'def', cat:'Definition Match', q:'Which term refers to how easily an asset can be converted into cash without significantly affecting its value?', opts:['Leverage','Collateral','Liquidity','Arbitrage'], ans:2,
+    explain:'Liquidity. Life insurance cash value offers relatively good liquidity because you can access it quickly via a policy loan.' },
+
+  { type:'def', cat:'Definition Match', q:'What is the term for a life insurance policy that has been funded beyond the IRS-allowed limit?', opts:['Surrender Contract','Over-Leveraged Policy','Modified Endowment Contract (MEC)','Variable Universal Life'], ans:2,
+    explain:'A Modified Endowment Contract (MEC) is what a policy becomes when premiums exceed the 7-Pay limit — changing its tax treatment permanently.' },
+
+  { type:'def', cat:'Definition Match', q:'The "Infinite Banking Concept" uses what as its primary financial tool?', opts:['Stock market index funds','The cash value of life insurance policies','Real estate equity','Government bonds'], ans:1,
+    explain:'IBC (Infinite Banking Concept) uses the cash value of specially structured life insurance policies as a personal banking system for financing purchases and investments.' },
+
+  { type:'def', cat:'Definition Match', q:'What are the three behavioral archetypes described in this strategy?', opts:['Investor, Saver, Speculator','Spender, Saver, Investor','Debtor, Saver, Wealth Builder','Borrower, Earner, Builder'], ans:2,
+    explain:'Debtor (buys liabilities), Saver (saves but loses momentum on big expenses), and Wealth Builder (keeps money invested while borrowing strategically).' },
+];
+
+// ─────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────
+let mode = 'mc';
+let questions = [];
+let current = 0;
+let score = 0;
+let streak = 0;
+let answered = false;
+let catStats = {};
+
+function selectMode(m) {
+  mode = m;
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('mode-' + m).classList.add('active');
+}
+
+function getQuestions() {
+  let pool;
+  if (mode === 'mc')    pool = allQuestions.filter(q => q.type === 'mc');
+  else if (mode === 'tf') pool = allQuestions.filter(q => q.type === 'tf');
+  else if (mode === 'def') pool = allQuestions.filter(q => q.type === 'def');
+  else pool = [...allQuestions];
+
+  // Shuffle
+  pool = pool.sort(() => Math.random() - 0.5);
+  return pool.slice(0, Math.min(15, pool.length));
+}
+
+function startQuiz() {
+  questions = getQuestions();
+  current = 0; score = 0; streak = 0; catStats = {};
+
+  document.getElementById('mode-screen').style.display = 'none';
+  document.getElementById('result-screen').classList.remove('show');
+  document.getElementById('quiz-screen').classList.add('show');
+
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[current];
+  answered = false;
+
+  document.getElementById('q-category').textContent = q.cat;
+  document.getElementById('q-number').textContent = `${current + 1} / ${questions.length}`;
+  document.getElementById('question-text').textContent = q.q;
+
+  const pct = (current / questions.length) * 100;
+  document.getElementById('prog-bar').style.width = pct + '%';
+  document.getElementById('hud-score').textContent = score;
+  document.getElementById('hud-streak').textContent = streak;
+
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback';
+  fb.textContent = '';
+
+  document.getElementById('next-btn').style.display = 'none';
+
+  const container = document.getElementById('options-container');
+  container.innerHTML = '';
+
+  if (q.type === 'tf') {
+    ['✅  True', '❌  False'].forEach((label, i) => {
+      container.appendChild(makeBtn(label, i, q));
+    });
+  } else {
+    const letters = ['A','B','C','D'];
+    q.opts.forEach((opt, i) => {
+      container.appendChild(makeBtn(opt, i, q, letters[i]));
+    });
+  }
+
+  // Animate card
+  const card = document.getElementById('question-card');
+  card.style.animation = 'none';
+  void card.offsetWidth;
+  card.style.animation = 'slideUp 0.35s ease';
+}
+
+function makeBtn(label, idx, q, letter) {
+  const btn = document.createElement('button');
+  btn.className = 'option-btn';
+  btn.innerHTML = letter
+    ? `<span class="opt-letter">${letter}</span>${label}`
+    : label;
+  btn.onclick = () => selectAnswer(idx, q, btn);
+  return btn;
+}
+
+function selectAnswer(idx, q, clickedBtn) {
+  if (answered) return;
+  answered = true;
+
+  const allBtns = document.querySelectorAll('.option-btn');
+  allBtns.forEach(b => b.disabled = true);
+
+  const correct = idx === q.ans;
+
+  if (correct) {
+    clickedBtn.classList.add('correct');
+    score++;
+    streak++;
+    if (streak >= 3) showStreakToast();
+    if (!catStats[q.cat]) catStats[q.cat] = {c:0,t:0};
+    catStats[q.cat].c++;
+  } else {
+    clickedBtn.classList.add('wrong');
+    streak = 0;
+    allBtns[q.ans].classList.add('missed');
+    if (!catStats[q.cat]) catStats[q.cat] = {c:0,t:0};
+  }
+  if (!catStats[q.cat]) catStats[q.cat] = {c:0,t:0};
+  catStats[q.cat].t++;
+
+  const fb = document.getElementById('feedback');
+  fb.textContent = (correct ? '✅ ' : '❌ ') + q.explain;
+  fb.className = 'feedback show ' + (correct ? 'correct-fb' : 'wrong-fb');
+
+  document.getElementById('hud-score').textContent = score;
+  document.getElementById('hud-streak').textContent = streak;
+  document.getElementById('next-btn').style.display = 'inline-flex';
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= questions.length) {
+    showResult();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showResult() {
+  document.getElementById('quiz-screen').classList.remove('show');
+  const rs = document.getElementById('result-screen');
+  rs.classList.add('show');
+
+  const pct = Math.round((score / questions.length) * 100);
+
+  let trophy, title, msg;
+  if (pct === 100)     { trophy = '🏆'; title = 'Perfect Score!'; msg = 'You\'re a certified wealth builder. Absolutely flawless.'; }
+  else if (pct >= 80)  { trophy = '🔥'; title = 'Wealth Builder!'; msg = 'You clearly understand the insurance game. Keep stacking knowledge.'; }
+  else if (pct >= 60)  { trophy = '📈'; title = 'Getting There!'; msg = 'Solid foundation. A couple more reps and you\'ll have this locked in.'; }
+  else if (pct >= 40)  { trophy = '📖'; title = 'Keep Studying!'; msg = 'Review the policy mechanics and MEC rules — they\'re key concepts.'; }
+  else                  { trophy = '💡'; title = 'Back to Basics!'; msg = 'Start with the definitions section. Every expert starts somewhere.'; }
+
+  document.getElementById('result-trophy').textContent = trophy;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-score').textContent = `${score}/${questions.length}`;
+  document.getElementById('result-pct').textContent = `${pct}% correct`;
+  document.getElementById('result-msg').textContent = msg;
+
+  // Category breakdown
+  const bd = document.getElementById('cat-breakdown');
+  bd.innerHTML = '';
+  Object.entries(catStats).forEach(([cat, stat]) => {
+    const p = stat.t > 0 ? Math.round((stat.c / stat.t) * 100) : 0;
+    bd.innerHTML += `
+      <div class="cat-row">
+        <div class="cat-name">${cat}</div>
+        <div class="cat-bar"><div class="cat-fill" style="width:${p}%"></div></div>
+        <div class="cat-pct">${p}%</div>
+      </div>`;
+  });
+
+  const progFill = document.getElementById('prog-bar');
+  if (progFill) progFill.style.width = '100%';
+}
+
+function showStreakToast() {
+  const t = document.getElementById('streak-toast');
+  t.textContent = `🔥 ${streak} in a row!`;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function restartQuiz() {
+  document.getElementById('result-screen').classList.remove('show');
+  startQuiz();
+}
+
+function goHome() {
+  document.getElementById('result-screen').classList.remove('show');
+  document.getElementById('quiz-screen').classList.remove('show');
+  document.getElementById('mode-screen').style.display = 'block';
+}
+</script>
+</body>
+</html>
